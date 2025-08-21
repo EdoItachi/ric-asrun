@@ -1,0 +1,25 @@
+NAMESPACE      NAME                                                         READY   STATUS      RESTARTS        AGE     IP             NODE         NOMINATED NODE   READINESS GATES
+kube-flannel   kube-flannel-ds-hq89p                                        1/1     Running     0               9h      10.0.2.15      shyama7004   <none>           <none>
+kube-system    coredns-5dd5756b68-242vw                                     1/1     Running     0               9h      10.244.0.114   shyama7004   <none>           <none>
+kube-system    coredns-5dd5756b68-flhhf                                     1/1     Running     0               9h      10.244.0.113   shyama7004   <none>           <none>
+kube-system    etcd-shyama7004                                              1/1     Running     18              9h      10.0.2.15      shyama7004   <none>           <none>
+kube-system    kube-apiserver-shyama7004                                    1/1     Running     17              9h      10.0.2.15      shyama7004   <none>           <none>
+kube-system    kube-controller-manager-shyama7004                           1/1     Running     14              9h      10.0.2.15      shyama7004   <none>           <none>
+kube-system    kube-proxy-q2zms                                             1/1     Running     0               9h      10.0.2.15      shyama7004   <none>           <none>
+kube-system    kube-scheduler-shyama7004                                    1/1     Running     13 (161m ago)   9h      10.0.2.15      shyama7004   <none>           <none>
+ricinfra       deployment-tiller-ricxapp-676dfd8664-8k46f                   1/1     Running     0               8h      10.244.0.120   shyama7004   <none>           <none>
+ricinfra       tiller-secret-generator-sgrt5                                0/1     Completed   0               8h      <none>         shyama7004   <none>           <none>
+ricplt         deployment-ricplt-a1mediator-df6fb4b68-2knpl                 1/1     Running     0               8h      10.244.0.125   shyama7004   <none>           <none>
+ricplt         deployment-ricplt-alarmmanager-cdd9598cb-nml68               1/1     Running     0               8h      10.244.0.129   shyama7004   <none>           <none>
+ricplt         deployment-ricplt-appmgr-5c7f7f94fc-wvrpc                    1/1     Running     0               8h      10.244.0.121   shyama7004   <none>           <none>
+ricplt         deployment-ricplt-e2mgr-7998b5d6fb-9qxwd                     1/1     Running     2 (8h ago)      8h      10.244.0.123   shyama7004   <none>           <none>
+ricplt         deployment-ricplt-e2term-alpha-58dc59f79b-ltv7f              1/1     Running     0               8h      10.244.0.124   shyama7004   <none>           <none>
+ricplt         deployment-ricplt-o1mediator-684ddb5574-8svsq                1/1     Running     0               8h      10.244.0.128   shyama7004   <none>           <none>
+ricplt         deployment-ricplt-rtmgr-6995b868c6-4jf5c                     1/1     Running     16 (8h ago)     8h      10.244.0.122   shyama7004   <none>           <none>
+ricplt         deployment-ricplt-submgr-89d5889df-sw2ds                     1/1     Running     0               8h      10.244.0.130   shyama7004   <none>           <none>
+ricplt         deployment-ricplt-vespamgr-677b87f9f4-8qvvs                  1/1     Running     0               8h      10.244.0.131   shyama7004   <none>           <none>
+ricplt         r4-infrastructure-kong-5986fc7965-nbgcp                      2/2     Running     0               8h      10.244.0.117   shyama7004   <none>           <none>
+ricplt         r4-infrastructure-prometheus-alertmanager-64f9876d6d-d2pms   2/2     Running     0               8h      10.244.0.115   shyama7004   <none>           <none>
+ricplt         r4-infrastructure-prometheus-server-bcc8cc897-4shp9          1/1     Running     0               8h      10.244.0.116   shyama7004   <none>           <none>
+ricplt         statefulset-ricplt-dbaas-server-0                            1/1     Running     0               8h      10.244.0.119   shyama7004   <none>           <none>
+ricxapp        ricxapp-hw-go-6f97f8cff-dshzn                                1/1     Running     0               9m43s   10.244.0.145   shyama7004   <none>           <none>

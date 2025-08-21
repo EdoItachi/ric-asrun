@@ -1,0 +1,50 @@
+21m         Normal    BackOff                           pod/ricxapp-hw-go-59dfd96c6c-89ssw    Back-off pulling image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1"
+21m         Warning   Failed                            pod/ricxapp-hw-go-59dfd96c6c-89ssw    Error: ImagePullBackOff
+21m         Normal    Pulling                           pod/ricxapp-hw-go-59dfd96c6c-89ssw    Pulling image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1"
+21m         Warning   FailedToRetrieveImagePullSecret   pod/ricxapp-hw-go-59dfd96c6c-89ssw    Unable to retrieve some image pull secrets (nexus3-o-ran-sc-org-10004); attempting to pull the image may not succeed.
+21m         Normal    ScalingReplicaSet                 deployment/ricxapp-hw-go              Scaled down replica set ricxapp-hw-go-f686fb55 to 0 from 1
+21m         Warning   Failed                            pod/ricxapp-hw-go-59dfd96c6c-89ssw    Error: ErrImagePull
+21m         Warning   Failed                            pod/ricxapp-hw-go-59dfd96c6c-89ssw    Failed to pull image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": rpc error: code = NotFound desc = failed to pull and unpack image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": failed to resolve reference "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1: not found
+21m         Normal    SuccessfulDelete                  replicaset/ricxapp-hw-go-f686fb55     Deleted pod: ricxapp-hw-go-f686fb55-tjzhp
+21m         Normal    SuccessfulDelete                  replicaset/ricxapp-hw-go-59dfd96c6c   Deleted pod: ricxapp-hw-go-59dfd96c6c-89ssw
+21m         Normal    ScalingReplicaSet                 deployment/ricxapp-hw-go              Scaled up replica set ricxapp-hw-go-59dfd96c6c to 1 from 0
+21m         Normal    SuccessfulCreate                  replicaset/ricxapp-hw-go-59dfd96c6c   Created pod: ricxapp-hw-go-59dfd96c6c-24gws
+20m         Normal    Pulling                           pod/ricxapp-hw-go-59dfd96c6c-24gws    Pulling image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1"
+20m         Warning   Failed                            pod/ricxapp-hw-go-59dfd96c6c-24gws    Error: ErrImagePull
+20m         Warning   Failed                            pod/ricxapp-hw-go-59dfd96c6c-24gws    Failed to pull image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": rpc error: code = NotFound desc = failed to pull and unpack image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": failed to resolve reference "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1: not found
+20m         Normal    BackOff                           pod/ricxapp-hw-go-59dfd96c6c-24gws    Back-off pulling image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1"
+20m         Warning   Failed                            pod/ricxapp-hw-go-59dfd96c6c-24gws    Error: ImagePullBackOff
+16m         Warning   FailedToRetrieveImagePullSecret   pod/ricxapp-hw-go-59dfd96c6c-24gws    Unable to retrieve some image pull secrets (nexus3-o-ran-sc-org-10004); attempting to pull the image may not succeed.
+15m         Normal    SuccessfulCreate                  replicaset/ricxapp-hw-go-64dc785b5    Created pod: ricxapp-hw-go-64dc785b5-qcn5k
+15m         Normal    ScalingReplicaSet                 deployment/ricxapp-hw-go              Scaled up replica set ricxapp-hw-go-64dc785b5 to 1
+15m         Normal    Pulling                           pod/ricxapp-hw-go-64dc785b5-qcn5k     Pulling image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1"
+15m         Warning   Failed                            pod/ricxapp-hw-go-64dc785b5-qcn5k     Failed to pull image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": rpc error: code = NotFound desc = failed to pull and unpack image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": failed to resolve reference "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1: not found
+15m         Warning   Failed                            pod/ricxapp-hw-go-64dc785b5-qcn5k     Error: ErrImagePull
+14m         Warning   Failed                            pod/ricxapp-hw-go-64dc785b5-qcn5k     Error: ImagePullBackOff
+14m         Normal    BackOff                           pod/ricxapp-hw-go-64dc785b5-qcn5k     Back-off pulling image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1"
+14m         Warning   FailedToRetrieveImagePullSecret   pod/ricxapp-hw-go-64dc785b5-qcn5k     Unable to retrieve some image pull secrets (nexus3-o-ran-sc-org-10004); attempting to pull the image may not succeed.
+14m         Normal    ScalingReplicaSet                 deployment/ricxapp-hw-go              Scaled down replica set ricxapp-hw-go-59dfd96c6c to 0 from 1
+14m         Normal    SuccessfulCreate                  replicaset/ricxapp-hw-go-6f97f8cff    Created pod: ricxapp-hw-go-6f97f8cff-t29d9
+14m         Normal    SuccessfulDelete                  replicaset/ricxapp-hw-go-59dfd96c6c   Deleted pod: ricxapp-hw-go-59dfd96c6c-24gws
+14m         Normal    Pulled                            pod/ricxapp-hw-go-6f97f8cff-t29d9     Container image "nexus3.o-ran-sc.org:10002/o-ran-sc/ric-app-hw-go:1.1.1" already present on machine
+14m         Normal    Started                           pod/ricxapp-hw-go-6f97f8cff-t29d9     Started container hw-go
+14m         Normal    Created                           pod/ricxapp-hw-go-6f97f8cff-t29d9     Created container hw-go
+14m         Normal    Pulling                           pod/ricxapp-hw-go-64dc785b5-zz6p8     Pulling image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1"
+14m         Normal    SuccessfulCreate                  replicaset/ricxapp-hw-go-64dc785b5    Created pod: ricxapp-hw-go-64dc785b5-zz6p8
+14m         Normal    BackOff                           pod/ricxapp-hw-go-64dc785b5-zz6p8     Back-off pulling image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1"
+14m         Warning   FailedToRetrieveImagePullSecret   pod/ricxapp-hw-go-64dc785b5-zz6p8     Unable to retrieve some image pull secrets (nexus3-o-ran-sc-org-10004); attempting to pull the image may not succeed.
+14m         Warning   Failed                            pod/ricxapp-hw-go-64dc785b5-zz6p8     Failed to pull image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": rpc error: code = NotFound desc = failed to pull and unpack image "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": failed to resolve reference "nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1": nexus3.o-ran-sc.org:10004/o-ran-sc/ric-app-hw-go:1.1.1: not found
+14m         Warning   Failed                            pod/ricxapp-hw-go-64dc785b5-zz6p8     Error: ErrImagePull
+14m         Warning   Failed                            pod/ricxapp-hw-go-64dc785b5-zz6p8     Error: ImagePullBackOff
+14m         Normal    SuccessfulDelete                  replicaset/ricxapp-hw-go-64dc785b5    Deleted pod: ricxapp-hw-go-64dc785b5-zz6p8
+14m         Normal    ScalingReplicaSet                 deployment/ricxapp-hw-go              Scaled down replica set ricxapp-hw-go-64dc785b5 to 0 from 1
+10m         Warning   FailedToRetrieveImagePullSecret   pod/ricxapp-hw-go-6f97f8cff-t29d9     Unable to retrieve some image pull secrets (nexus3-o-ran-sc-org-10004); attempting to pull the image may not succeed.
+10m         Normal    ScalingReplicaSet                 deployment/ricxapp-hw-go              Scaled down replica set ricxapp-hw-go-6f97f8cff to 0 from 1
+10m         Normal    Killing                           pod/ricxapp-hw-go-6f97f8cff-t29d9     Stopping container hw-go
+10m         Normal    SuccessfulDelete                  replicaset/ricxapp-hw-go-6f97f8cff    Deleted pod: ricxapp-hw-go-6f97f8cff-t29d9
+9m44s       Normal    SuccessfulCreate                  replicaset/ricxapp-hw-go-6f97f8cff    Created pod: ricxapp-hw-go-6f97f8cff-dshzn
+9m44s       Normal    Pulled                            pod/ricxapp-hw-go-6f97f8cff-dshzn     Container image "nexus3.o-ran-sc.org:10002/o-ran-sc/ric-app-hw-go:1.1.1" already present on machine
+9m44s       Normal    ScalingReplicaSet                 deployment/ricxapp-hw-go              Scaled up replica set ricxapp-hw-go-6f97f8cff to 1 from 0
+9m44s       Normal    Created                           pod/ricxapp-hw-go-6f97f8cff-dshzn     Created container hw-go
+9m43s       Normal    Started                           pod/ricxapp-hw-go-6f97f8cff-dshzn     Started container hw-go
+26s         Warning   FailedToRetrieveImagePullSecret   pod/ricxapp-hw-go-6f97f8cff-dshzn     Unable to retrieve some image pull secrets (nexus3-o-ran-sc-org-10004); attempting to pull the image may not succeed.
