@@ -46,58 +46,35 @@ sudo -E env KUBECONFIG=$KUBECONFIG kubectl get pods -A -o wide
 
 </details>
 
-
-
 ### Step-2: Got deployment scripts and installed base bits
 
 <details>
 <summary>Commands Ran</summary>
 
 ```bash
+# clone and checkout
 mkdir -p ~/workspace && cd ~/workspace
 [ -d ric-plt-ric-dep ] || git clone https://github.com/o-ran-sc/ric-plt-ric-dep.git
-cd ric-plt-ric-dep
-git checkout j-release
-```
+cd ric-plt-ric-dep && git checkout j-release
 
-```bash
+# base setup
 cd ~/workspace/ric-plt-ric-dep/bin
 sudo ./install_k8s_and_helm.sh
 sudo ./install_common_templates_to_helm.sh
 ```
+
 </details>
 
 <details>
-    <summary>Outputs</summary>
+<summary>Key outputs</summary>
 
-From `sudo ./install_k8s_and_helm.sh`:
-
-```bash
-Done with master node setup
-+ [[ ! -z '' ]]
-+ [[ ! -z '' ]]
-+ [[ ! -z '' ]]
-+ [[ 1 -gt 100 ]]
-+ [[ 1 -gt 100 ]]
-```
-
-From `sudo ./install_common_templates_to_helm.sh`:
-
-```bash
-servcm up and running
-/root/.cache/helm/repository
-Successfully packaged chart and saved it to: /tmp/ric-common-3.3.2.tgz
-"local" has been removed from your repositories
-"local" has been added to your repositories
-checking that ric-common templates were added
-NAME            	CHART VERSION	APP VERSION	DESCRIPTION                                   
-local/ric-common	3.3.2        	           	Common templates for inclusion in other charts
-```
+* Helm installed and working
+* `local/ric-common` added (v3.3.2)
 
 <img width="979" height="132" alt="Screenshot 2025-08-21 at 18 32 40" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/2.png" />
-
 </details>
 
+---
 
 ### Step-3: Selected recipe and set IPs
 
@@ -106,7 +83,6 @@ local/ric-common	3.3.2        	           	Common templates for inclusion in oth
 
 ```bash
 cd ~/workspace/ric-dep
-# Choose the j-release recipe you used; example:
 ls -l RECIPE_EXAMPLE
 grep -nA2 -E 'extsvcplt:|ricip|auxip' RECIPE_EXAMPLE/example_recipe_oran_j_release.yaml
 ```
@@ -114,26 +90,15 @@ grep -nA2 -E 'extsvcplt:|ricip|auxip' RECIPE_EXAMPLE/example_recipe_oran_j_relea
 </details>
 
 <details>
-<summary>Outputs</summary>
+<summary>Key outputs</summary>
 
-Output from: `./install_k8s_and_helm.sh`
+* Recipe present under `RECIPE_EXAMPLE`
+* `extsvcplt.ricip` and `extsvcplt.auxip` set to my node IP
 
-```bash
-Done with master node setup
-+ [[ ! -z '' ]]
-+ [[ ! -z '' ]]
-+ [[ ! -z '' ]]
-+ [[ 1 -gt 100 ]]
-+ [[ 1 -gt 100 ]]
-
-````
-
-Output from: `./install_k8s_and_helm.sh`
 <img width="832" height="316" alt="Screenshot 2025-08-21 at 18 39 55" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/3.png" />
-
 </details>
 
-> recipes requires `extsvcplt.ricip` and `extsvcplt.auxip`.&#x20;
+> Note: the recipe requires both `extsvcplt.ricip` and `extsvcplt.auxip`.
 
 
 ### Step-4: Deployed the RIC platform
@@ -148,7 +113,7 @@ cd ~/workspace/ric-dep/bin
 </details>
 
 <details>
-  <summary>Ouputs</summary>
+  <summary>Outputs</summary>
 
 ```bash
 
@@ -346,55 +311,57 @@ nano RECIPE_EXAMPLE/example_recipe_oran_j_release.yaml
 ``` 
 </details>
 
-### Step-6: Verify ingress and AppMgr health
+<details>
+<summary>Output</summary>
+
 <img width="540" height="256" alt="Screenshot 2025-08-21 at 19 12 06" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/6.1.png" />
+
+</details>
+
+### Step-6: Discovered Kong NodePorts and node IP
 
 <details>
 <summary>Commands Ran</summary>
 
 ```bash
-# Find Kong proxy service and NodePort
-sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricplt get svc | egrep -i 'kong|appmgr|proxy'
+kubectl -n ricplt get svc r4-infrastructure-kong-proxy -o wide
+
+# to get the  nodeports by numeric port
+HTTP_NODEPORT=$(kubectl -n ricplt get svc r4-infrastructure-kong-proxy \
+  -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
+HTTPS_NODEPORT=$(kubectl -n ricplt get svc r4-infrastructure-kong-proxy \
+  -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')
+echo "HTTP_NODEPORT=$HTTP_NODEPORT  HTTPS_NODEPORT=$HTTPS_NODEPORT"
+
+# captuting node IP for later
 NODE_IP=$(hostname -I | awk '{print $1}')
-curl -v "http://$NODE_IP:32080/appmgr/ric/v1/health/ready"
-```
+echo "NODE_IP=$NODE_IP"
+````
+
 </details>
 
 <details>
-    <summary>Outputs</summary>
-<img width="390" height="48" alt="Screenshot 2025-08-21 at 19 13 26" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/6.2.png" />
+<summary>Outputs</summary>
+
+```bash
+NAME                                 TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                          AGE
+r4-infrastructure-kong-proxy         LoadBalancer   10.103.x.x     <pending>     80:32080/TCP,443:32443/TCP      10m
+
+HTTP_NODEPORT=32080  HTTPS_NODEPORT=32443
+NODE_IP=10.0.2.15
+```
 
 </details>
 
 ### Step-7: Fixed image pulls and ingress routing
-
-#### first confirmed Kong service and NodePorts
-
-<details>
-    <summary>Commands Ran</summary>
-
-```bash
-sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricplt get svc | egrep -i 'kong|appmgr|proxy'
-HTTP_NODEPORT=$(sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricplt get svc r4-infrastructure-kong-proxy \
-  -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
-HTTPS_NODEPORT=$(sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricplt get svc r4-infrastructure-kong-proxy \
-  -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')
-echo "HTTP_NODEPORT=$HTTP_NODEPORT  HTTPS_NODEPORT=$HTTPS_NODEPORT"
-````
-</details>
-
-<details>
-    <summary>Output</summary>
-
-<img width="764" height="173" alt="Screenshot 2025-08-21 at 19 12 59" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.1.png" />
-</details>
+> using `NODE_IP` and `HTTP_NODEPORT` from my step-6
 
 #### created a minimal Kong Ingress for AppMgr
 
 > Kong was installed, but I got a 404 without a matching route. I created one to map `/appmgr` to the AppMgr service and strip the prefix.
 
 <details>
-    <summary>Commands Ran</summary>
+<summary>Commands Ran</summary>
 
 ```bash
 cat <<'EOF' >/tmp/appmgr-ingress.yaml
@@ -420,14 +387,14 @@ spec:
 EOF
 
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl apply -f /tmp/appmgr-ingress.yaml
-```
+````
+
 </details>
 
 <details>
-    <summary>Outputs</summary>
+<summary>Outputs</summary>
 
-<img width="560" height="77" alt="Screenshot 2025-08-21 at 19 08 58" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.2.png" />
-
+<img width="560" height="77" alt="apply-ingress" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.2.png" />
 </details>
 
 <details>
@@ -436,34 +403,33 @@ sudo -E env KUBECONFIG=$KUBECONFIG kubectl apply -f /tmp/appmgr-ingress.yaml
 ```bash
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricplt get ingress -o wide
 ```
+
 </details>
 
 <details>
-    <summary>Outputs</summary>
+<summary>Outputs</summary>
 
-<img width="481" height="84" alt="Screenshot 2025-08-21 at 19 11 22" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.3.png" />
-
+<img width="481" height="84" alt="get-ingress" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.3.png" />
 </details>
 
 #### checked health through Kong
 
 <details>
-    <summary>Commands Ran</summary>
+<summary>Commands Ran</summary>
 
 ```bash
-NODE_IP=$(hostname -I | awk '{print $1}')
-curl -s -o /dev/null -w "%{http_code}\n" http://$NODE_IP:$HTTP_NODEPORT/appmgr/ric/v1/health/ready
+curl -s -o /dev/null -w "%{http_code}\n" "http://$NODE_IP:$HTTP_NODEPORT/appmgr/ric/v1/health/ready"
 ```
+
 </details>
 
 <details>
-    <summary>Outputs</summary>
+<summary>Outputs</summary>
 
-<img width="628" height="92" alt="Screenshot 2025-08-21 at 19 11 01" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.4.png" />
+<img width="628" height="92" alt="health-200" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.4.png" />
 </details>
 
-
-> Sometimes I still got `404`. I waited \~30s and retried. If it kept failing, I ran:
+> If I still saw `404`, I waited \~30s and retried. If it kept failing:
 >
 > ```bash
 > sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricplt describe ingress appmgr-ing | sed -n '/Rules:/,$p'
@@ -472,7 +438,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://$NODE_IP:$HTTP_NODEPORT/appmgr/r
 
 #### Prove the image-pull fixes (submgr/vespamgr)
 
-> I switched to `:10002` and set `IfNotPresent`.  
+> I switched to `:10002` and set `IfNotPresent`.
 
 <details>
 <summary>Commands Ran</summary>
@@ -487,28 +453,26 @@ done
 sudo ctr -n k8s.io images ls | egrep 'ric-plt-(submgr|vespamgr)'
 
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricplt get pods -o wide | egrep 'submgr|vespamgr'
-````
+```
 
 </details>
 
 <details>
 <summary>Outputs</summary>
 
-<img width="942" height="177" alt="Screenshot 2025-08-21 at 19 10 41" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.5.png" />
+<img width="942" height="177" alt="deploy-images" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.5.png" />
 
-<img width="987" height="147" alt="Screenshot 2025-08-21 at 19 10 13" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.6.png" />
+<img width="987" height="147" alt="ctr-images" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.6.png" />
 
-<img width="980" height="168" alt="Screenshot 2025-08-21 at 19 08 28" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.7.png" />
+<img width="980" height="168" alt="pods-running" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/7.7.png" />
 </details>
 
 #### What I got
 
-* Kong proxy NodePorts found (HTTP and HTTPS)
-* Ingress for `/appmgr` exists and health check returns **200**
-* `submgr` and `vespamgr` are running, using images from `:10002` with `imagePullPolicy=IfNotPresent`
+* Ingress for `/appmgr` exists and returns **200** via Kong
+* `submgr` and `vespamgr` use `:10002` with `imagePullPolicy=IfNotPresent` and are **Running**
 
-
-### Step-8: Ran ChartMuseum with Docker
+### Step-8: Ran ChartMuseum with Docker (fixed)
 
 <details>
 <summary>Commands Ran</summary>
@@ -526,24 +490,24 @@ sudo curl -s http://localhost:8080/health
 
 export CHART_REPO_URL=http://localhost:8080
 echo $CHART_REPO_URL
-````
+```
 
 </details>
 
 <details>
 <summary>Outputs</summary>
 
-<img width="921" height="68" alt="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/8.png" />
+<img width="921" height="68" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/8.png" alt="chartmuseum running and health check" />
 </details>
 
 <details>
 <summary>Issues and fixes</summary>
 
-**Issue**  
+**Issue**
 `docker pull chartmuseum/chartmuseum:latest` failed — “Temporary failure in name resolution”.
 
-**Fix**  
-Fixed host/Docker DNS (systemd-resolved restart) and re-ran:
+**Fix**
+Restarted `systemd-resolved` / fixed DNS, then re-ran:
 
 ```bash
 sudo docker run -d --name chartmuseum \
@@ -551,12 +515,13 @@ sudo docker run -d --name chartmuseum \
   -e STORAGE_LOCAL_ROOTDIR=/charts \
   chartmuseum/chartmuseum:latest
 curl -s http://localhost:8080/health   # {"healthy":true}
-ChartMuseum is healthy at http://localhost:8080.
 ```
 
-</details> 
+ChartMuseum is healthy at `http://localhost:8080`.
 
-### Step-9: Installed the xApp onboarder (dms_cli)
+</details>
+
+### Step-9: Installed the xApp onboarder (dms\_cli) (fixed)
 
 #### installed Python 3.9 and cloned repo
 
@@ -572,16 +537,15 @@ python3.9 --version
 mkdir -p ~/workspace && cd ~/workspace
 [ -d ric-plt-appmgr ] || git clone https://github.com/o-ran-sc/ric-plt-appmgr.git
 cd ric-plt-appmgr && git checkout j-release
-````
+```
 
 </details>
 
 <details>
 <summary>Outputs</summary>
 
-<img width="407" height="201" alt="Screenshot 2025-08-21 at 19 40 57" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/9.1.png" />
+<img width="407" height="201" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/9.1.png" alt="python and repo checkout" />
 </details>
-
 
 #### created venv and installed onboarder CLI
 
@@ -602,9 +566,8 @@ dms_cli --help | head -n 5
 <details>
 <summary>Outputs</summary>
 
-<img width="518" height="194" alt="Screenshot 2025-08-21 at 19 40 17" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/9.2.png" />
+<img width="518" height="194" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/9.2.png" alt="dms_cli help" />
 </details>
-
 
 #### confirmed ChartMuseum is reachable (Docker path)
 
@@ -622,31 +585,32 @@ curl -s $CHART_REPO_URL/api/charts    # {} or []
 <details>
 <summary>Outputs</summary>
 
-<img width="154" height="59" alt="Screenshot 2025-08-21 at 19 39 36" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/9.3.png" />
+<img width="154" height="59" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/9.3.png" alt="chartmuseum health and empty list" />
 </details>
 
 <details>
 <summary>Issues and fixes</summary>
 
-**Issue**  
+**Issue**
 `dms_cli get_charts_list --chart_repo_url` isn’t supported in this j-release.
 
-**Fix**  
-Relied on environment variable and basic health check instead:
+**Fix**
+Used env var and basic health checks instead:
 
 ```bash
 export CHART_REPO_URL=http://localhost:8080
-dms_cli health        # confirms CLI is ready
+dms_cli health
 curl -s $CHART_REPO_URL/api/charts   # {} or []
-Onboarder works with the local ChartMuseum.
 ```
 
-</details> 
+Onboarder works with the local ChartMuseum.
+
+</details>
 
 **Notes**
 
-* In this j-release, `dms_cli get_charts_list` doesn’t take a `--chart_repo_url` flag. We’ll pass repo info directly when onboarding in Step 9.
-* Success criteria: Python 3.9 installed, `dms_cli` works (`--help`), ChartMuseum health returns `{"healthy":true}`, and chart list is empty `{}` or `[]`.
+* This j-release doesn’t accept `--chart_repo_url` for `get_charts_list`; you’ll pass repo info at onboarding time.
+* Success criteria: Python 3.9 installed, `dms_cli` shows help, ChartMuseum health `{"healthy":true}`, chart list `{}`/`[]`.
 
 
 ### Step-10: Onboard and Verify hw-go xApp
@@ -655,14 +619,13 @@ Onboarder works with the local ChartMuseum.
 <summary>Commands Ran</summary>
 
 ```bash
-# Onboard the sample xApp
+# onboard the sample xApp
 cd ~/workspace/ric-plt-appmgr/xapp_orchestrater/dev/xapp_onboarder
 sudo -E env KUBECONFIG=$KUBECONFIG ./onboarder onboard config.json
 
-# Install via Helm
+# installed via helm
 sudo -E env KUBECONFIG=$KUBECONFIG helm install hw-go ./hw-go --namespace ricxapp
 
-# Check pods
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricxapp get pods -o wide
 ````
 
@@ -712,18 +675,18 @@ kubectl -n ricxapp rollout status deploy/$DEPLOY --timeout=3m
 <summary>Commands Ran</summary>
 
 ```bash
-# Check Deployment image
+# check deployment image
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricxapp get deploy ricxapp-hw-go \
   -o jsonpath='replicas={.spec.replicas} image={.spec.template.spec.containers[0].image}{"\n"}'
 
-# Show ReplicaSets
+# show ReplicaSets
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricxapp get rs \
   -o jsonpath='{range .items[*]}{.metadata.name}{"  "}{.spec.template.spec.containers[0].image}{"  "}replicas={.spec.replicas} ready={.status.readyReplicas}{"\n"}{end}'
 
-# Show pods
+# show the pods
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricxapp get pods -o wide
 
-# Confirm Helm release
+# confirm Helm release
 sudo -E env KUBECONFIG=$KUBECONFIG helm list -n ricxapp
 ```
 
@@ -817,17 +780,20 @@ curl -s -o /dev/null -w "%{http_code}\n" http://$NODE_IP:32080/appmgr/ric/v1/hea
 kubectl -n ricxapp get deploy ricxapp-hw-go \
   -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 
+kubectl -n ricxapp get deploy ricxapp-hw-go \
+  -o jsonpath='{.status.readyReplicas}/{.spec.replicas}{"\n"}'
+
 kubectl -n ricxapp get pods -o wide | grep hw-go
-```
+````
 
 </details>
 
 <details>
-<summary>Output</summary>
+<summary>Outputs</summary>
 
 <img width="723" height="41" alt="Screenshot 2025-08-22 at 11 12 33" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/13.png" />
-</details>
 
+</details>
 
 ### Step-14: Snapshot services & releases
 
@@ -836,21 +802,20 @@ kubectl -n ricxapp get pods -o wide | grep hw-go
 
 ```bash
 helm list -A
-kubectl get pods -n ricplt
-kubectl get pods -n ricinfra
+kubectl get pods -n ricplt -o wide
+kubectl get pods -n ricinfra -o wide
 kubectl get svc -A
-```
+````
 
 </details>
 
 <details>
 <summary>Outputs</summary>
 
-<img width="890" height="177" alt="Screenshot 2025-08-22 at 11 14 15" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.1.png" />
-<img width="595" height="257" alt="Screenshot 2025-08-22 at 11 13 52" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.2.png" />
-<img width="856" height="437" alt="Screenshot 2025-08-22 at 11 13 27" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.3.png" />
+<img width="890" height="177" alt="helm list" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.1.png" />
+<img width="595" height="257" alt="ricplt pods" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.2.png" />
+<img width="856" height="437" alt="all services" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.3.png" />
 </details>
-
 
 ### E2TERM details for sims
 
@@ -858,19 +823,19 @@ kubectl get svc -A
 <summary>Commands Ran</summary>
 
 ```bash
-echo "E2TERM SCTP: $NODE_IP:32222"
+SCTP_NODEPORT=$(kubectl -n ricplt get svc service-ricplt-e2term-sctp-alpha \
+  -o jsonpath='{.spec.ports[?(@.name=="sctp")].nodePort}')
+echo "E2TERM SCTP: $NODE_IP:${SCTP_NODEPORT:-32222}"
 kubectl -n ricplt get svc service-ricplt-e2term-sctp-alpha -o wide
-```
+````
 
 </details>
 
-> NodePort `32222` is available for sims (`$NODE_IP:32222`).
-
----
+> Point sims to `SCTP $NODE_IP:${SCTP_NODEPORT:-32222}`.
 
 ## Conclusion
 
-I deployed Near-RT RIC (j-release) on a single-node VM, verified ingress health (`HTTP 200`), and successfully onboarded the `hw-go` xApp with `dms_cli`. The Deployment image was patched to `nexus3.o-ran-sc.org:10002/o-ran-sc/ric-app-hw-go:1.1.1`, and the final state shows one healthy Running pod. `helm list`, `kubectl get pods`, and `kubectl get svc` confirm that the platform is stable. E2TERM is reachable for sims at `$NODE_IP:32222`, and the system is ready for further xApp testing.
+I deployed Near-RT RIC (j-release) on a single-node VM, verified ingress via Kong (HTTP 200 on `/appmgr/ric/v1/health/ready`), and onboarded the `hw-go` xApp with `dms_cli`. The chart initially pulled from `:10004` and failed; I switched to `:10002` and set `IfNotPresent`. The Deployment now uses `nexus3.o-ran-sc.org:10002/o-ran-sc/ric-app-hw-go:1.1.1` with a single `1/1 Running` pod. `helm list -A`, pod listings, and service snapshots confirm a healthy platform. E2TERM is reachable for sims at `SCTP $NODE_IP:${SCTP_NODEPORT:-32222}`.
 
 ```
 Created by shyama7004
