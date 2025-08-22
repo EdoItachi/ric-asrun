@@ -5,9 +5,23 @@
 * **KUBECONFIG:** `/etc/kubernetes/admin.conf`  
 * **Branches:** `ric-plt-ric-dep@j-release`, `ric-plt-appmgr@j-release`  
 * **Registry:** prefer `:10004`, fallback `:10002`  
-* **Proxy:** `NO_PROXY` covers cluster and nexus  
+* **Proxy:** `NO_PROXY` covers cluster and nexus
+* **Versions:** Ubuntu 20.04, Kubernetes v1.28.x, Helm v3.13.x, containerd v1.7.x
+ 
 
 ---
+
+## Overview
+
+* Deployed O-RAN Near-RT RIC (Release J) on a single-node Kubernetes VM (containerd + kubeadm).
+* Set `extsvcplt.ricip` and `extsvcplt.auxip`; exposed Kong via NodePort.
+* Health check: `/appmgr/ric/v1/health/ready` returns 200.
+* Onboarded the `hw-go` xApp with `dms_cli` and Helm using a local ChartMuseum.
+* Fixed `ImagePullBackOff` by switching from `:10004` to `:10002` and setting `imagePullPolicy=IfNotPresent`.
+* Current state: core RIC services running; `ricxapp-hw-go` is `1/1 Running`.
+* Evidence: pods, services, Helm releases, and configs saved under `/outputs`.
+* For sims: captured E2TERM SCTP NodePort for connection.
+
 
 ## 1. Collected Outputs
 
@@ -35,7 +49,7 @@ sudo -E env KUBECONFIG=$KUBECONFIG kubectl version --output=yaml
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl get ns
 sudo -E env KUBECONFIG=$KUBECONFIG helm list -A
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl get pods -A -o wide
-````
+```
 
 </details>
 
@@ -52,12 +66,12 @@ sudo -E env KUBECONFIG=$KUBECONFIG kubectl get pods -A -o wide
 <summary>Commands Ran</summary>
 
 ```bash
-# clone and checkout
+# Clone and checkout
 mkdir -p ~/workspace && cd ~/workspace
 [ -d ric-plt-ric-dep ] || git clone https://github.com/o-ran-sc/ric-plt-ric-dep.git
 cd ric-plt-ric-dep && git checkout j-release
 
-# base setup
+# Base setup
 cd ~/workspace/ric-plt-ric-dep/bin
 sudo ./install_k8s_and_helm.sh
 sudo ./install_common_templates_to_helm.sh
@@ -82,7 +96,7 @@ sudo ./install_common_templates_to_helm.sh
 <summary>Commands Ran</summary>
 
 ```bash
-cd ~/workspace/ric-dep
+cd ~/workspace/ric-plt-ric-dep
 ls -l RECIPE_EXAMPLE
 grep -nA2 -E 'extsvcplt:|ricip|auxip' RECIPE_EXAMPLE/example_recipe_oran_j_release.yaml
 ```
@@ -107,7 +121,7 @@ grep -nA2 -E 'extsvcplt:|ricip|auxip' RECIPE_EXAMPLE/example_recipe_oran_j_relea
 <summary>Commands Ran</summary>
 
 ```bash
-cd ~/workspace/ric-dep/bin
+cd ~/workspace/ric-plt-ric-dep/bin
 ./install -f ../RECIPE_EXAMPLE/example_recipe_oran_j_release.yaml
 ```
 </details>
@@ -333,10 +347,10 @@ HTTPS_NODEPORT=$(kubectl -n ricplt get svc r4-infrastructure-kong-proxy \
   -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')
 echo "HTTP_NODEPORT=$HTTP_NODEPORT  HTTPS_NODEPORT=$HTTPS_NODEPORT"
 
-# captuting node IP for later
+# capturing node IP for later
 NODE_IP=$(hostname -I | awk '{print $1}')
 echo "NODE_IP=$NODE_IP"
-````
+```
 
 </details>
 
@@ -350,7 +364,6 @@ r4-infrastructure-kong-proxy         LoadBalancer   10.103.x.x     <pending>    
 HTTP_NODEPORT=32080  HTTPS_NODEPORT=32443
 NODE_IP=10.0.2.15
 ```
-
 </details>
 
 ### Step-7: Fixed image pulls and ingress routing
@@ -387,7 +400,7 @@ spec:
 EOF
 
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl apply -f /tmp/appmgr-ingress.yaml
-````
+```
 
 </details>
 
@@ -627,7 +640,7 @@ sudo -E env KUBECONFIG=$KUBECONFIG ./onboarder onboard config.json
 sudo -E env KUBECONFIG=$KUBECONFIG helm install hw-go ./hw-go --namespace ricxapp
 
 sudo -E env KUBECONFIG=$KUBECONFIG kubectl -n ricxapp get pods -o wide
-````
+```
 
 </details>
 
@@ -658,7 +671,7 @@ kubectl -n ricxapp rollout status deploy/$DEPLOY --timeout=3m
 ```
 </details>
 
-## Step-11: Fix ErrImagePull & Stabilize Deployment
+### Step-11: Fix ErrImagePull & Stabilize Deployment
 
 <details>
 <summary>Actions Taken</summary>
@@ -743,7 +756,7 @@ kubectl -n ricxapp rollout status deploy/ricxapp-hw-go --timeout=3m
 export KUBECONFIG=/etc/kubernetes/admin.conf
 NODE_IP=$(hostname -I | awk '{print $1}')
 curl -s -o /dev/null -w "%{http_code}\n" http://$NODE_IP:32080/appmgr/ric/v1/health/ready
-````
+```
 
 </details>
 
@@ -780,20 +793,17 @@ curl -s -o /dev/null -w "%{http_code}\n" http://$NODE_IP:32080/appmgr/ric/v1/hea
 kubectl -n ricxapp get deploy ricxapp-hw-go \
   -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 
-kubectl -n ricxapp get deploy ricxapp-hw-go \
-  -o jsonpath='{.status.readyReplicas}/{.spec.replicas}{"\n"}'
-
 kubectl -n ricxapp get pods -o wide | grep hw-go
-````
+```
 
 </details>
 
 <details>
-<summary>Outputs</summary>
+<summary>Output</summary>
 
 <img width="723" height="41" alt="Screenshot 2025-08-22 at 11 12 33" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/13.png" />
-
 </details>
+
 
 ### Step-14: Snapshot services & releases
 
@@ -802,20 +812,21 @@ kubectl -n ricxapp get pods -o wide | grep hw-go
 
 ```bash
 helm list -A
-kubectl get pods -n ricplt -o wide
-kubectl get pods -n ricinfra -o wide
+kubectl get pods -n ricplt
+kubectl get pods -n ricinfra
 kubectl get svc -A
-````
+```
 
 </details>
 
 <details>
 <summary>Outputs</summary>
 
-<img width="890" height="177" alt="helm list" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.1.png" />
-<img width="595" height="257" alt="ricplt pods" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.2.png" />
-<img width="856" height="437" alt="all services" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.3.png" />
+<img width="890" height="177" alt="Screenshot 2025-08-22 at 11 14 15" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.1.png" />
+<img width="595" height="257" alt="Screenshot 2025-08-22 at 11 13 52" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.2.png" />
+<img width="856" height="437" alt="Screenshot 2025-08-22 at 11 13 27" src="https://github.com/EdoItachi/ric-asrun/blob/main/screenshots/14.3.png" />
 </details>
+
 
 ### E2TERM details for sims
 
@@ -823,19 +834,31 @@ kubectl get svc -A
 <summary>Commands Ran</summary>
 
 ```bash
-SCTP_NODEPORT=$(kubectl -n ricplt get svc service-ricplt-e2term-sctp-alpha \
+NODE_IP=$(hostname -I | awk '{print $1}')
+
+E2_SVC=$(kubectl -n ricplt get svc -o name | grep -E 'e2term.*sctp' | head -n1 | cut -d/ -f2)
+SCTP_NODEPORT=$(kubectl -n ricplt get svc "$E2_SVC" \
   -o jsonpath='{.spec.ports[?(@.name=="sctp")].nodePort}')
-echo "E2TERM SCTP: $NODE_IP:${SCTP_NODEPORT:-32222}"
-kubectl -n ricplt get svc service-ricplt-e2term-sctp-alpha -o wide
-````
+
+echo "E2TERM SCTP endpoint: $NODE_IP:${SCTP_NODEPORT:-<unset>}"
+kubectl -n ricplt get svc "$E2_SVC" -o wide
+```
 
 </details>
 
-> Point sims to `SCTP $NODE_IP:${SCTP_NODEPORT:-32222}`.
+> Use `$NODE_IP:$SCTP_NODEPORT` for sims. If `SCTP_NODEPORT` is empty, the service isn’t NodePort; switch it to NodePort or expose it accordingly.
+
+---
 
 ## Conclusion
 
-I deployed Near-RT RIC (j-release) on a single-node VM, verified ingress via Kong (HTTP 200 on `/appmgr/ric/v1/health/ready`), and onboarded the `hw-go` xApp with `dms_cli`. The chart initially pulled from `:10004` and failed; I switched to `:10002` and set `IfNotPresent`. The Deployment now uses `nexus3.o-ran-sc.org:10002/o-ran-sc/ric-app-hw-go:1.1.1` with a single `1/1 Running` pod. `helm list -A`, pod listings, and service snapshots confirm a healthy platform. E2TERM is reachable for sims at `SCTP $NODE_IP:${SCTP_NODEPORT:-32222}`.
+* Deployed Near-RT RIC (Release J) on a single-node VM.
+* Ingress health OK: `/appmgr/ric/v1/health/ready` → **200** via Kong.
+* Onboarded the `hw-go` xApp with `dms_cli` and Helm.
+* Fixed `ImagePullBackOff` by switching to `:10002` and setting `imagePullPolicy=IfNotPresent`.
+* Current state: core services healthy; `ricxapp-hw-go` **1/1 Running**.
+* Verified with `helm list`, `kubectl get pods`, and `kubectl get svc`.
+* E2TERM for sims: `"$NODE_IP:$SCTP_NODEPORT"` (dynamic NodePort).
 
 ```
 Created by shyama7004
