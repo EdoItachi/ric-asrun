@@ -860,5 +860,4 @@ kubectl -n ricplt get svc "$E2_SVC" -o wide
 * Verified with `helm list`, `kubectl get pods`, and `kubectl get svc`.
 * E2TERM for sims: `"$NODE_IP:$SCTP_NODEPORT"` (dynamic NodePort).
 
-```
-Created by shyama7004
+Created by [shyama7004](https://github.com/shyama7004)
